@@ -1,0 +1,13 @@
+{
+  "id": "/ana-app/agenda-ana-local",
+  "name": "Agenda Ana — Cópia Local",
+  "short_name": "Agenda Ana",
+  "description": "Cópia local independente para desenvolvimento da Ana.",
+  "start_url": "/ana-app/index.html",
+  "scope": "/ana-app/",
+  "display": "standalone",
+  "background_color": "#101416",
+  "theme_color": "#101416",
+  "lang": "pt-BR",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

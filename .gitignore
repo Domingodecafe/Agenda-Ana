@@ -1,0 +1,10 @@
+node_modules/
+site/
+vendor/
+.pnpm-store/
+test-results/
+*.local
+.env
+.env.*
+*.backup.json
+ana-app-backup-*.json

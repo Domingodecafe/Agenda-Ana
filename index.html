@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101416">
+  <meta name="description" content="Agenda de atendimentos privada, offline e salva no seu dispositivo.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=30">
+  <link rel="stylesheet" href="ana-panel.css?v=ana-app-4">
+  <title>Agenda Ana — Agenda e avisos</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">A</span><h1>Agenda Ana</h1><span class="app-version" aria-label="Agenda independente da original">CÓPIA</span></div>
+      <div class="header-actions">
+        <a class="text-button" href="ana-console.html">Configurar Ana</a>
+        <button id="export-ana-backup" class="text-button" type="button">Backup local</button>
+        <button id="install-button" class="icon-button install-button hidden" type="button" title="Instalar aplicativo" aria-label="Instalar aplicativo">⇩</button>
+        <button id="today-header" class="text-button" type="button">Hoje</button>
+        <span id="connection-badge" class="local-badge">Conectando…</span>
+      </div>
+    </header>
+
+    <aside id="update-notice" class="update-notice hidden" role="status"><span id="update-message">Atualização disponível</span><button id="apply-update" class="secondary-button" type="button">Atualizar</button></aside>
+    <main>
+      <section id="agenda-screen" class="screen active" aria-label="Agenda">
+        <div class="toolbar surface">
+          <div class="date-nav">
+            <button id="prev-date" class="icon-button" type="button" aria-label="Período anterior">‹</button>
+            <button id="next-date" class="icon-button" type="button" aria-label="Próximo período">›</button>
+            <div class="period-label"><strong id="period-primary"></strong><span id="period-secondary"></span></div>
+            <button id="today-toolbar" class="toolbar-today" type="button">Hoje</button>
+          </div>
+          <div class="segmented" role="group" aria-label="Visualização da agenda">
+            <button data-view="day" type="button">Dia</button>
+            <button data-view="week" type="button" class="active">Semana</button>
+            <button data-view="month" type="button">Mês</button>
+          </div>
+        </div>
+        <div id="calendar" class="calendar surface" aria-live="polite" tabindex="0"></div>
+      </section>
+
+      <section id="clients-screen" class="screen" aria-label="Clientes">
+        <div class="section-heading"><div><span class="eyebrow">CADASTROS</span><h2>Clientes</h2><p>Informações essenciais para agendar mais rápido.</p></div><button id="new-client" class="primary-button" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Novo cliente</span></button></div>
+        <div class="search-wrap"><span>⌕</span><input id="client-search" type="search" placeholder="Buscar por nome ou telefone" aria-label="Buscar clientes"></div>
+        <div id="client-list" class="client-grid"></div>
+      </section>
+
+      <section id="summary-screen" class="screen" aria-label="Resumo financeiro">
+        <div id="summary-overview">
+          <div class="section-heading"><div><span class="eyebrow">RESUMO</span><div class="summary-title"><h2>Financeiro</h2><button class="values-toggle" data-toggle-values type="button" aria-label="Ocultar valores" aria-pressed="false" title="Ocultar valores"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash hidden" d="m3 3 18 18"/></svg></button></div><p>Quem precisa pagar, o que entrou e as próximas sessões.</p></div><label id="summary-month-picker" class="month-picker"><span>Mês</span><input id="summary-month" type="month"></label></div>
+          <div id="finance-cards" class="finance-grid finance-actions" role="tablist" aria-label="Visões financeiras"></div>
+          <div id="summary-results" role="tabpanel" aria-labelledby="finance-due"><p id="summary-description" class="finance-view-description"></p><button id="undated-payments" class="text-action hidden" type="button"></button>
+          <div class="surface summary-panel"><div class="panel-heading"><div><span id="summary-empty-context" class="eyebrow">PARA RECEBER</span><h3 id="summary-list-title">Clientes</h3></div><span class="panel-hint">Toque no cliente para ver as sessões</span></div><div id="summary-list" class="summary-list"></div></div></div>
+        </div>
+        <div id="client-finance-detail" class="client-finance-detail hidden">
+          <div class="detail-heading"><button id="summary-back" class="secondary-button" type="button">← Voltar</button><div><span class="eyebrow">HISTÓRICO FINANCEIRO</span><div class="summary-title"><h2 id="detail-client-name"></h2><button class="values-toggle" data-toggle-values type="button" aria-label="Ocultar valores" aria-pressed="false" title="Ocultar valores"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash hidden" d="m3 3 18 18"/></svg></button></div><p id="detail-client-subtitle"></p></div></div>
+          <div class="finance-detail-tools"><p>Selecione as sessões para registrar ou alterar o pagamento.</p><button id="detail-history-toggle" class="secondary-button" type="button" aria-pressed="false">Ver histórico completo</button></div>
+          <section id="detail-past-section" class="appointment-section surface"><div class="appointment-section-heading"><div><span class="eyebrow">SESSÕES</span><h3 id="detail-past-title">Sessões sem pagamento</h3></div><span id="past-count" class="section-count"></span></div><div id="past-appointments" class="finance-appointment-list"></div></section>
+          <div id="payment-bar" class="payment-bar hidden"><div class="payment-total"><div><span id="payment-selection-count">0 selecionados</span><strong id="payment-selection-total">R$ 0,00</strong></div><button id="clear-payment-selection" class="text-action" type="button">Limpar seleção</button></div><div class="payment-actions" role="group" aria-label="Alterar status financeiro"><button class="secondary-button" data-financial-action="A receber" type="button">A receber</button><button class="primary-button" data-financial-action="Pago" type="button">Receber</button><button class="danger-button" data-financial-action="Não pago" type="button">Não pago</button></div></div>
+          <section id="detail-future-section" class="appointment-section surface"><div class="appointment-section-heading"><div><span class="eyebrow">AGENDA</span><h3>Próximas sessões</h3></div><span id="future-count" class="section-count"></span></div><div id="future-appointments" class="finance-appointment-list"></div></section>
+        </div>
+      </section>
+      <section id="ana-screen" class="screen" aria-label="Painel da Ana">
+        <div class="section-heading"><div><span class="eyebrow">HENRIQUEFERREIRA</span><h2>Avisos da Ana</h2><p>Sua agenda e os pedidos que precisam de você.</p></div><div class="ana-tools"><button id="refresh-ana" class="secondary-button">Atualizar</button><button id="logout-ana" class="text-button">Sair</button></div></div>
+        <div class="ana-stats"><article class="surface"><small>Pedidos pendentes</small><strong id="ana-summary-pending">0</strong></article><article class="surface"><small>Atendimento com Henrique</small><strong id="ana-summary-human">0</strong></article><article class="surface"><small>Conexão</small><strong id="ana-connection">Conectando…</strong><small id="ana-last-sync"></small></article></div>
+        <div class="ana-agent-status surface"><span class="ana-status-dot"></span><div><strong>Agentes ainda não conectados</strong><p>A agenda funciona pelo servidor. A execução da Ana será configurada no computador Ubuntu/WSL.</p><small id="realtime-status">Atualizações automáticas entre dispositivos</small></div></div>
+        <div class="surface ana-inbox"><h3>Encaminhamentos</h3><div id="ana-requests"></div></div>
+        <div class="surface ana-inbox"><h3>Atendimentos assumidos</h3><div id="ana-human-contacts"></div></div>
+        <details class="surface ana-inbox"><summary>Histórico das operações</summary><div id="ana-history"></div></details>
+      </section>
+    </main>
+
+    <button id="fab" class="fab" type="button"><span>＋</span><b>Novo atendimento</b></button>
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <button data-tab="agenda" class="active" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2"/></svg></span><span>Agenda</span></button>
+      <button data-tab="clients" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5"/></svg></span><span>Clientes</span></button>
+      <button data-tab="summary" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-6m7 6V9m7 11V4"/></svg></span><span>Resumo</span></button>
+      <button data-tab="ana" type="button"><span class="nav-icon">A</span><span>Ana <b id="ana-pending-badge" class="ana-badge">0</b></span></button>
+    </nav>
+  </div>
+
+  <dialog id="appointment-dialog" class="modal">
+    <form id="appointment-form" method="dialog">
+      <div class="modal-header"><div><span id="appointment-kicker" class="eyebrow">NOVO</span><h2 id="appointment-title">Novo atendimento</h2></div><button class="close-button" value="cancel" type="button" data-close="appointment-dialog" aria-label="Fechar">×</button></div>
+      <input id="appointment-id" type="hidden">
+      <div class="type-toggle"><button data-kind="appointment" type="button" class="active">Atendimento</button><button data-kind="block" type="button">Bloqueio de horário</button></div>
+      <input id="appointment-kind" type="hidden" value="appointment">
+      <div id="appointment-fields">
+        <label class="field full"><span id="appointment-client-label">Cliente</span><input id="appointment-client" list="client-options" autocomplete="off" placeholder="Nome do cliente" required><datalist id="client-options"></datalist></label>
+        <div class="form-grid">
+          <label class="field"><span>Tipo de atendimento</span><select id="appointment-type"><option>Consulta</option><option>Sessão</option><option>Avaliação</option><option>Retorno</option><option>Outro</option></select></label>
+          <label class="field"><span>Modalidade</span><select id="appointment-modality"><option>Presencial</option><option>Online</option></select></label>
+        </div>
+      </div>
+      <label id="block-label-wrap" class="field full hidden"><span>Motivo do bloqueio</span><input id="block-label" placeholder="Ex.: Almoço, compromisso pessoal"></label>
+      <div class="form-grid three">
+        <label class="field"><span>Data</span><input id="appointment-date" type="date" required></label>
+        <label class="field time-field"><span>Início</span><select id="appointment-start" class="time-select" required aria-label="Horário de início"></select></label>
+        <label class="field time-field"><span>Fim <small>1h padrão</small></span><select id="appointment-end" class="time-select" required aria-label="Horário de fim"></select></label>
+      </div>
+      <div id="appointment-extra">
+        <div class="form-grid">
+          <label id="appointment-value-field" class="field money-field"><span>Valor</span><div><span>R$</span><input id="appointment-value" type="number" min="0" step="0.01" value="0"></div></label>
+          <label class="field"><span>Recorrência</span><select id="appointment-recurrence"><option value="none">Única</option><option value="weekly">Semanal</option><option value="biweekly">Quinzenal</option><option value="monthly">Mensal</option></select></label>
+        </div>
+        <div class="field full color-field"><span>Cor na agenda</span><input id="appointment-color" type="hidden" value="green"><div class="color-picker" data-color-picker="appointment" role="group" aria-label="Cor do atendimento">
+          <button class="active" data-color="green" type="button" aria-label="Verde" aria-pressed="true"><i></i><b>Verde</b></button>
+          <button data-color="yellow" type="button" aria-label="Amarelo" aria-pressed="false"><i></i><b>Amarelo</b></button>
+          <button data-color="red" type="button" aria-label="Vermelho" aria-pressed="false"><i></i><b>Vermelho</b></button>
+          <button data-color="purple" type="button" aria-label="Roxo" aria-pressed="false"><i></i><b>Roxo</b></button>
+          <button data-color="blue" type="button" aria-label="Azul" aria-pressed="false"><i></i><b>Azul</b></button>
+        </div>
+        </div>
+        <div id="edit-financial-field" class="hidden">
+          <label class="field full"><span>Status financeiro</span><select id="financial-status"><option>A receber</option><option>Pago</option><option>Não pago</option></select></label>
+          <div id="active-payment-card" class="active-payment-card hidden"><div><span>Pagamento registrado</span><strong id="active-payment-summary"></strong></div><div><button id="edit-payment" class="text-action" type="button">Editar pagamento</button><button id="view-payment-history" class="text-action" type="button">Ver histórico</button></div></div>
+        </div>
+      </div>
+      <p id="form-error" class="form-error" role="alert"></p>
+      <div class="modal-actions"><div><button id="delete-appointment" class="danger-button hidden" type="button">Excluir</button></div><div><button class="secondary-button" type="button" data-close="appointment-dialog">Cancelar</button><button class="primary-button" type="submit">Salvar</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog id="client-dialog" class="modal small-modal">
+    <form id="client-form" method="dialog">
+      <div class="modal-header"><div><span class="eyebrow">CLIENTE</span><h2 id="client-dialog-title">Novo cliente</h2></div><button class="close-button" type="button" data-close="client-dialog" aria-label="Fechar">×</button></div>
+      <input id="client-id" type="hidden">
+      <label class="field full"><span>Nome</span><input id="client-name" required autocomplete="name"></label>
+      <label class="field full"><span>Telefone <small>opcional</small></span><input id="client-phone" type="tel" autocomplete="tel" placeholder="(00) 00000-0000"></label>
+      <label class="field money-field full"><span>Valor padrão da sessão</span><div><span>R$</span><input id="client-value" type="number" min="0" step="0.01" value="0"></div></label>
+      <label class="field full"><span>Observações <small>opcional</small></span><textarea id="client-notes" rows="3" maxlength="500" placeholder="Preferências, lembretes ou informações importantes"></textarea></label>
+      <details><summary>Controle da Ana</summary>
+        <label class="field full"><span>Modalidade cadastrada</span><select id="client-modality"><option value="">Não informada</option><option>Presencial</option><option>Online</option></select></label>
+        <label><input id="client-minor" type="checkbox"> Menor identificado por Henrique — atendimento humano</label>
+        <label><input id="client-financial" type="checkbox"> Número próprio autorizado a consultar informações financeiras</label>
+        <p>Vínculos e controle humano podem ser configurados em Controle da Ana.</p>
+      </details>
+      <div class="field full color-field"><span>Cor padrão na agenda</span><input id="client-color" type="hidden" value="green"><div class="color-picker" data-color-picker="client" role="group" aria-label="Cor do cliente">
+        <button class="active" data-color="green" type="button" aria-label="Verde" aria-pressed="true"><i></i><b>Verde</b></button>
+        <button data-color="yellow" type="button" aria-label="Amarelo" aria-pressed="false"><i></i><b>Amarelo</b></button>
+        <button data-color="red" type="button" aria-label="Vermelho" aria-pressed="false"><i></i><b>Vermelho</b></button>
+        <button data-color="purple" type="button" aria-label="Roxo" aria-pressed="false"><i></i><b>Roxo</b></button>
+        <button data-color="blue" type="button" aria-label="Azul" aria-pressed="false"><i></i><b>Azul</b></button>
+      </div>
+      <div class="modal-actions"><button id="delete-client" class="danger-button hidden" type="button">Excluir</button><div><button class="secondary-button" type="button" data-close="client-dialog">Cancelar</button><button class="primary-button" type="submit">Salvar</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="modal confirm-modal"><form method="dialog"><div class="confirm-symbol">!</div><h2 id="confirm-title">Confirmar ação</h2><p id="confirm-text"></p><div class="modal-actions centered"><button class="secondary-button" value="cancel">Cancelar</button><button id="confirm-action" class="danger-button" value="confirm">Confirmar</button></div></form></dialog>
+  <dialog id="scope-dialog" class="modal confirm-modal scope-modal"><form method="dialog"><div class="confirm-symbol">↗</div><h2 id="scope-title">Aplicar alteração</h2><p id="scope-text"></p><div class="scope-actions"><button id="scope-single" class="secondary-button" value="single">Somente esta</button><button id="scope-future" class="primary-button" value="future">Esta e futuras</button><button class="secondary-button" value="cancel">Cancelar</button></div></form></dialog>
+  <dialog id="payment-dialog" class="modal small-modal payment-dialog">
+    <form id="payment-form">
+      <div class="modal-header"><div><span id="payment-step" class="eyebrow">PAGAMENTO</span><h2>Registrar pagamento</h2></div><button id="payment-close" class="close-button" type="button" aria-label="Cancelar pagamento">×</button></div>
+      <div class="payment-context"><strong id="payment-client-name"></strong><span id="payment-session-details"></span><b id="payment-session-value"></b></div>
+      <label class="field full"><span>Data do pagamento</span><input id="payment-date" type="date" required></label>
+      <label class="field full"><span>Forma de pagamento</span><select id="payment-method" required><option value="PIX">PIX</option><option value="Dinheiro">Dinheiro</option><option value="Outro">Outro</option></select></label>
+      <label id="payment-method-detail-wrap" class="field full hidden"><span>Qual forma?</span><input id="payment-method-detail" maxlength="60" placeholder="Ex.: cartão ou transferência"></label>
+      <p id="payment-error" class="form-error" role="alert"></p>
+      <div class="modal-actions"><button id="payment-back" class="secondary-button hidden" type="button">← Anterior</button><div><button id="payment-cancel" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Continuar</button></div></div>
+    </form>
+  </dialog>
+  <dialog id="payment-history-dialog" class="modal small-modal payment-history-dialog"><form method="dialog"><div class="modal-header"><div><span class="eyebrow">AUDITORIA</span><h2>Histórico do pagamento</h2></div><button class="close-button" value="cancel" aria-label="Fechar">×</button></div><div id="payment-history-list" class="payment-history-list"></div><div class="modal-actions"><span></span><button class="primary-button" value="cancel">Fechar</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="ana-public-config.js?v=ana-app-4" defer></script>
+  <script src="ana-environment.js?v=ana-app-4" defer></script>
+  <script src="ana-policy.js?v=ana-app-4" defer></script>
+  <script src="ana-agenda-model.js?v=ana-app-4" defer></script>
+  <script src="ana-agenda-store.js?v=ana-app-4" defer></script>
+  <script src="vendor/supabase.js?v=ana-app-4" defer></script>
+  <script src="ana-supabase-adapter.js?v=ana-app-4" defer></script>
+  <script src="ana-sync-client.js?v=ana-app-4" defer></script>
+  <script src="ana-cloud-bootstrap.js?v=ana-app-4" defer></script>
+  <script src="app.js?v=ana-app-4" defer></script>
+</body>
+</html>
