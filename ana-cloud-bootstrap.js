@@ -3,7 +3,6 @@
   'use strict';
   const env=globalThis.AnaEnvironment;
   if(!env?.isAllowed()||!env.networkEnabled)return;
-  let recovery=new URLSearchParams(location.hash.slice(1)).get('type')==='recovery';
   const sdk=globalThis.AnaSupabaseSDK;
   const client=sdk.createClient(env.cloudUrl,env.publishableKey,{auth:{storageKey:'ana-app-auth-v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   let sync,remote,account,changing=false,initialized=false;
@@ -37,7 +36,6 @@
       if(navigator.onLine)await remote.profile();
       sync=AnaSyncClient.create({remote,cache,ownerId:account.id});sync.subscribe(emit);
       await sync.read();if(g!==generation)return;
-      if(recovery){gate(true);tell('Defina uma nova senha para sua conta.');return;}
       gate(false);tell('');emit();
       if(!initialized){initialized=true;globalThis.AnaCloudReady();}else document.dispatchEvent(new Event('ana-account-ready'));
     }catch(error){await remote?.close();tell(error.message);gate(true);if(account&&!navigator.onLine)tell('Não há uma cópia offline disponível para essa sessão. Conecte-se para entrar.');}
@@ -56,17 +54,25 @@
   }};
   document.addEventListener('DOMContentLoaded',async()=>{
     const panel=document.createElement('section');panel.id='auth-gate';panel.className='auth-gate';
-    panel.innerHTML=`<div class="auth-card"><span class="eyebrow">AGENDA ANA</span><h1>Seu atendimento, em um só lugar.</h1><p>Entre para acessar sua agenda e os avisos da Ana.</p><form id="auth-form"><label>E-mail<input id="auth-email" type="email" autocomplete="username" required></label><label>Senha<input id="auth-password" type="password" autocomplete="current-password" required minlength="6"></label><button class="primary-button" type="submit">Entrar</button></form><p id="auth-error" role="status"></p><div class="auth-actions"><button id="auth-signup" class="text-button" type="button">Criar minha conta</button><button id="auth-reset" class="text-button" type="button">Esqueci a senha</button></div><p class="auth-note">HenriqueFerreira · Acesso administrativo restrito. Os agentes ainda não estão ativos.</p></div>`;
+    panel.innerHTML=`<div class="auth-card"><span class="eyebrow">AGENDA ANA</span><h1>Seu atendimento, em um só lugar.</h1><p>Digite seu e-mail para receber um link de acesso. Não precisa de senha.</p><form id="auth-form"><label>E-mail<input id="auth-email" type="email" autocomplete="email" required></label><button class="primary-button" type="submit">Receber link de acesso</button></form><p id="auth-error" role="status" aria-live="polite"></p><p class="auth-note">HenriqueFerreira · Acesso restrito ao e-mail autorizado. Confira também a pasta de spam.</p></div>`;
     document.body.append(panel);gate(true);
-    $('#auth-form').addEventListener('submit',async e=>{e.preventDefault();const password=$('#auth-password').value;$('#auth-password').value='';tell(recovery?'Atualizando senha…':'Entrando…');try{if(recovery){const {error}=await client.auth.updateUser({password});if(error)throw error;recovery=false;const {data}=await client.auth.getSession();await connect(data.session);return;}const {data,error}=await client.auth.signInWithPassword({email:$('#auth-email').value.trim(),password});if(error)throw error;await connect(data.session);}catch(err){tell(err.message);}});
-    $('#auth-signup').addEventListener('click',async()=>{const email=$('#auth-email').value.trim(),password=$('#auth-password').value;if(!email||password.length<6){tell('Preencha seu e-mail e uma senha para criar a conta.');return;}$('#auth-password').value='';try{const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+env.basePath,data:{display_name:'HenriqueFerreira'}}});if(error)throw error;if(data.session)await connect(data.session);else tell('Confira seu e-mail para confirmar a conta. Depois entre com sua senha.');}catch(e){tell(e.message);}});
-    $('#auth-reset').addEventListener('click',async()=>{const email=$('#auth-email').value.trim();if(!email){tell('Preencha seu e-mail primeiro.');return;}const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+env.basePath});tell(error?error.message:'Se a conta existir, as instruções de recuperação chegarão por e-mail.');});
+    let sending=false;
+    $('#auth-form').addEventListener('submit',async e=>{
+      e.preventDefault();if(sending)return;
+      if(!navigator.onLine){tell('Conecte-se à internet para receber o link de acesso.');return;}
+      sending=true;const button=$('#auth-form button');button.disabled=true;tell('Enviando link de acesso…');
+      try{
+        const {error}=await client.auth.signInWithOtp({email:$('#auth-email').value.trim(),options:{emailRedirectTo:location.origin+env.basePath,shouldCreateUser:true,data:{display_name:'HenriqueFerreira'}}});
+        if(error)throw error;
+        tell('Confira seu e-mail e toque no link para entrar. Se não chegar, confira o spam e aguarde um minuto antes de tentar novamente.');
+      }catch(error){tell(error.status===429?'Aguarde um minuto antes de pedir outro link.':error.message);}
+      finally{sending=false;button.disabled=false;}
+    });
     try{const {data,error}=await client.auth.getSession();if(error)throw error;if(data.session)await connect(data.session);}catch(e){tell(e.message);}
     client.auth.onAuthStateChange((event,session)=>{
       if(event==='SIGNED_OUT'){generation++;const old=sync;sync=null;account=null;gate(true);document.dispatchEvent(new Event('ana-account-changing'));old?.stop().catch(()=>{});remote?.close().catch(()=>{});emit();}
       if(event==='SIGNED_IN'&&session&&(!account||account.id!==session.user.id))setTimeout(()=>connect(session),0);
       if(event==='TOKEN_REFRESHED'&&session)setTimeout(()=>sync?.refresh().catch(()=>{}),0);
-      if(event==='PASSWORD_RECOVERY'){recovery=true;gate(true);$('#auth-password').autocomplete='new-password';$('#auth-form button').textContent='Definir nova senha';tell('Defina uma nova senha para sua conta.');}
     });
     for(const ev of ['online','focus','pageshow'])window.addEventListener(ev,()=>sync?.refresh().catch(()=>{}));
     window.addEventListener('offline',()=>sync?.refresh().catch(()=>{}));

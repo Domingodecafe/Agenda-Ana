@@ -8,10 +8,16 @@ IA serão configurados posteriormente no Ubuntu/WSL.
 
 Site: **https://domingodecafe.github.io/Agenda-Ana/**
 
-Entre com o e-mail administrativo autorizado e sua senha do Supabase Auth.
-O perfil exibido é HenriqueFerreira. Para o primeiro acesso, use **Criar minha
-conta**, confirme o e-mail e entre. O código não contém e-mail privado, senha
-administrativa, chave privilegiada ou token de acesso.
+Digite o e-mail administrativo autorizado e escolha **Receber link de acesso**.
+Abra o e-mail e toque no link para entrar, sem senha. O primeiro envio também cria
+a conta, quando necessário; somente e-mails autorizados e confirmados conseguem
+abrir a agenda. O perfil exibido é HenriqueFerreira. O código não contém e-mail
+privado, senha administrativa, chave privilegiada ou token de acesso.
+
+A autenticação por link segue o fluxo oficial do Supabase Auth. O envio de e-mails
+precisa estar configurado no projeto; o remetente padrão tem limites e restringe
+os destinatários aos membros autorizados da organização. Nunca substituir a
+verificação do e-mail por uma comparação de texto no navegador.
 
 O painel **Ana** reúne pendências, atendimentos assumidos e histórico. Assumir
 um atendimento pausa a automação daquele contato; devolver aguarda uma nova
@@ -92,8 +98,7 @@ migração pública com o e-mail real.
 Configuração de Auth: Site URL `https://domingodecafe.github.io/Agenda-Ana/` e
 redirects permitidos para esse endereço e `http://127.0.0.1:43189/ana-app/`.
 Esses valores devem ser conferidos no painel do projeto antes dos fluxos de
-confirmação de e-mail e recuperação de senha. Não mudar a conta administrativa
-ou a senha através de arquivos do projeto.
+acesso por link. Não mudar a conta administrativa através de arquivos do projeto.
 
 GitHub Actions publica exclusivamente `site/`. O pacote não inclui testes,
 SQL, configuração privada, backups, documentação interna ou dados de pacientes.

@@ -10,7 +10,7 @@ function setup(scope=base){
   const c=vm.createContext({URL,location:new URL('sw.js',base),registration:{scope},
     addEventListener:(name,fn)=>events.set(name,fn),importScripts(){},
     clients:{claim:async()=>{}},
-    caches:{async open(name){assert.equal(name,'ana-app-pwa-v4');return {async match(key){matches.push(key);return 'COPY-ONLY';},async addAll(files){cached.push(...files);}}},match(){throw new Error('Proibido consultar cache global');},keys(){throw new Error('Proibido enumerar caches');},delete(){throw new Error('Proibido excluir caches');}},
+    caches:{async open(name){assert.equal(name,'ana-app-pwa-v5');return {async match(key){matches.push(key);return 'COPY-ONLY';},async addAll(files){cached.push(...files);}}},match(){throw new Error('Proibido consultar cache global');},keys(){throw new Error('Proibido enumerar caches');},delete(){throw new Error('Proibido excluir caches');}},
     fetch(){throw new Error('Requisição externa inesperada');}
   });c.self=c;vm.runInContext(environment,c);
   return {c,events,matches,cached};
