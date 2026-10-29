@@ -21,7 +21,7 @@ test('PWA copiada não aceita worker na raiz nem identidade da original',async()
 });
 test('worker usa somente cache próprio e inclui modelo compartilhado no offline',async()=>{
   const x=setup();vm.runInContext(worker,x.c);let pending;x.events.get('install')({waitUntil(p){pending=p;}});await pending;
-  assert.ok(x.cached.includes('./ana-agenda-model.js?v=ana-app-4'));
+  assert.ok(x.cached.includes('./ana-agenda-model.js?v=ana-app-5'));
   for(const path of x.cached)if(!path.includes('vendor/'))await read(path.slice(2).split('?')[0]);
 });
 test('navegação para o painel mantém sua página em vez de receber a agenda',async()=>{
