@@ -10,7 +10,7 @@ function setup(scope=base){
   const c=vm.createContext({URL,location:new URL('sw.js',base),registration:{scope},
     addEventListener:(name,fn)=>events.set(name,fn),importScripts(){},
     clients:{claim:async()=>{}},
-    caches:{async open(name){assert.equal(name,'ana-app-pwa-v5');return {async match(key){matches.push(key);return 'COPY-ONLY';},async addAll(files){cached.push(...files);}}},match(){throw new Error('Proibido consultar cache global');},keys(){throw new Error('Proibido enumerar caches');},delete(){throw new Error('Proibido excluir caches');}},
+    caches:{async open(name){assert.equal(name,'ana-app-pwa-v6');return {async match(key){matches.push(key);return 'COPY-ONLY';},async addAll(files){cached.push(...files);}}},match(){throw new Error('Proibido consultar cache global');},keys(){throw new Error('Proibido enumerar caches');},delete(){throw new Error('Proibido excluir caches');}},
     fetch(){throw new Error('Requisição externa inesperada');}
   });c.self=c;vm.runInContext(environment,c);
   return {c,events,matches,cached};
@@ -21,7 +21,7 @@ test('PWA copiada não aceita worker na raiz nem identidade da original',async()
 });
 test('worker usa somente cache próprio e inclui modelo compartilhado no offline',async()=>{
   const x=setup();vm.runInContext(worker,x.c);let pending;x.events.get('install')({waitUntil(p){pending=p;}});await pending;
-  assert.ok(x.cached.includes('./ana-agenda-model.js?v=ana-app-5'));
+  assert.ok(x.cached.includes('./ana-agenda-model.js?v=ana-app-6'));
   for(const path of x.cached)if(!path.includes('vendor/'))await read(path.slice(2).split('?')[0]);
 });
 test('navegação para o painel mantém sua página em vez de receber a agenda',async()=>{

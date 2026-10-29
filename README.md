@@ -8,16 +8,11 @@ IA serão configurados posteriormente no Ubuntu/WSL.
 
 Site: **https://domingodecafe.github.io/Agenda-Ana/**
 
-Digite o e-mail administrativo autorizado e escolha **Receber link de acesso**.
-Abra o e-mail e toque no link para entrar, sem senha. O primeiro envio também cria
-a conta, quando necessário; somente e-mails autorizados e confirmados conseguem
-abrir a agenda. O perfil exibido é HenriqueFerreira. O código não contém e-mail
-privado, senha administrativa, chave privilegiada ou token de acesso.
-
-A autenticação por link segue o fluxo oficial do Supabase Auth. O envio de e-mails
-precisa estar configurado no projeto; o remetente padrão tem limites e restringe
-os destinatários aos membros autorizados da organização. Nunca substituir a
-verificação do e-mail por uma comparação de texto no navegador.
+Entre com o e-mail administrativo autorizado e a senha cadastrada no Supabase Auth.
+O acesso com senha abre a agenda diretamente, sem depender de links de e-mail ou
+redirecionamentos. O perfil exibido é HenriqueFerreira. Credenciais e autorizações
+ficam no servidor; nenhum e-mail privado ou senha deve ser incluído no repositório.
+A configuração de autenticação mais forte será revisada antes do uso definitivo.
 
 O painel **Ana** reúne pendências, atendimentos assumidos e histórico. Assumir
 um atendimento pausa a automação daquele contato; devolver aguarda uma nova

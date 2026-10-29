@@ -54,18 +54,19 @@
   }};
   document.addEventListener('DOMContentLoaded',async()=>{
     const panel=document.createElement('section');panel.id='auth-gate';panel.className='auth-gate';
-    panel.innerHTML=`<div class="auth-card"><span class="eyebrow">AGENDA ANA</span><h1>Seu atendimento, em um só lugar.</h1><p>Digite seu e-mail para receber um link de acesso. Não precisa de senha.</p><form id="auth-form"><label>E-mail<input id="auth-email" type="email" autocomplete="email" required></label><button class="primary-button" type="submit">Receber link de acesso</button></form><p id="auth-error" role="status" aria-live="polite"></p><p class="auth-note">HenriqueFerreira · Acesso restrito ao e-mail autorizado. Confira também a pasta de spam.</p></div>`;
+    panel.innerHTML=`<div class="auth-card"><span class="eyebrow">AGENDA ANA</span><h1>Seu atendimento, em um só lugar.</h1><p>Entre com seu e-mail e senha para acessar a agenda.</p><form id="auth-form"><label>E-mail<input id="auth-email" type="email" autocomplete="email" required></label><label>Senha<input id="auth-password" type="password" autocomplete="current-password" required minlength="6"></label><button class="primary-button" type="submit">Entrar</button></form><p id="auth-error" role="status" aria-live="polite"></p><p class="auth-note">HenriqueFerreira · Acesso administrativo restrito.</p></div>`;
     document.body.append(panel);gate(true);
     let sending=false;
     $('#auth-form').addEventListener('submit',async e=>{
       e.preventDefault();if(sending)return;
-      if(!navigator.onLine){tell('Conecte-se à internet para receber o link de acesso.');return;}
-      sending=true;const button=$('#auth-form button');button.disabled=true;tell('Enviando link de acesso…');
+      if(!navigator.onLine){tell('Conecte-se à internet para entrar.');return;}
+      sending=true;const button=$('#auth-form button');button.disabled=true;tell('Entrando…');
       try{
-        const {error}=await client.auth.signInWithOtp({email:$('#auth-email').value.trim(),options:{emailRedirectTo:location.origin+env.basePath,shouldCreateUser:true,data:{display_name:'HenriqueFerreira'}}});
+        const password=$('#auth-password').value;$('#auth-password').value='';
+        const {data,error}=await client.auth.signInWithPassword({email:$('#auth-email').value.trim(),password});
         if(error)throw error;
-        tell('Confira seu e-mail e toque no link para entrar. Se não chegar, confira o spam e aguarde um minuto antes de tentar novamente.');
-      }catch(error){tell(error.status===429?'Aguarde um minuto antes de pedir outro link.':error.message);}
+        await connect(data.session);
+      }catch(error){tell(error.code==='invalid_credentials'?'E-mail ou senha incorretos. Confira e tente novamente.':error.status===429?'Muitas tentativas. Aguarde um minuto e tente novamente.':error.message);}
       finally{sending=false;button.disabled=false;}
     });
     try{const {data,error}=await client.auth.getSession();if(error)throw error;if(data.session)await connect(data.session);}catch(e){tell(e.message);}
